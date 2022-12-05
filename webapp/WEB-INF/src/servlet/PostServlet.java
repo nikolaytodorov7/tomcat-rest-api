@@ -7,14 +7,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import mapper.PostMapper;
 import model.Post;
 import model.Posts;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.*;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static util.NumberParser.parseInt;
@@ -22,24 +20,16 @@ import static util.PrintWriterJson.writeAsJson;
 import static util.PrintWriterJson.writeAsJsonNull;
 
 public class PostServlet extends HttpServlet {
-    private static PostMapper mapper;
+    private static PostMapper mapper = new PostMapper();
     private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public void init() {
-        File file = new File("C:\\Projects\\IdeaProjects\\TomApp\\src\\main\\webapp\\WEB-INF\\resources\\mybatis-config.xml");
-        Properties properties = new Properties();
-        String propertiesPath = "C:\\Projects\\IdeaProjects\\TomApp\\src\\main\\webapp\\WEB-INF\\src\\util\\jdbc.properties";
-        try (InputStream in = new FileInputStream(file);
-             BufferedReader reader = new BufferedReader(new FileReader(propertiesPath))) {
-            properties.load(reader);
-            SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(in, properties);
-            mapper = new PostMapper(factory);
-        } catch (IOException e) {
-            System.err.println("Properties error!\n" + e.getMessage());
-        }
-    }
-
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
             mapper.getAllPosts().forEach((p) -> writeAsJson(resp, p));
@@ -73,6 +63,12 @@ public class PostServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
         String body = req.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
         Posts posts = gson.fromJson(body, Posts.class);
         if (posts == null) {
@@ -87,6 +83,12 @@ public class PostServlet extends HttpServlet {
     }
 
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
         String body = req.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
         Post post = gson.fromJson(body, Post.class);
         if (post == null)
@@ -96,7 +98,13 @@ public class PostServlet extends HttpServlet {
         writeAsJson(resp, post);
     }
 
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
         String pathInfo = req.getPathInfo();
         if (pathInfo == null) {
             writeAsJsonNull(resp);

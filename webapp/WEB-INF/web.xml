@@ -15,6 +15,16 @@
         <servlet-class>servlet.CommentServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>servlet.LoginServlet</servlet-name>
+        <servlet-class>servlet.LoginServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>servlet.LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
     <servlet-mapping>
         <servlet-name>servlet.CommentServlet</servlet-name>
         <url-pattern>/comments</url-pattern>
@@ -24,11 +34,6 @@
         <servlet-name>servlet.PostServlet</servlet-name>
         <url-pattern>/posts/*/comments</url-pattern>
     </servlet-mapping>
-
-<!--    <servlet-mapping>-->
-<!--        <servlet-name>servlet.PostServlet</servlet-name>-->
-<!--        <url-pattern>/posts</url-pattern>-->
-<!--    </servlet-mapping>-->
 
     <servlet-mapping>
         <servlet-name>servlet.PostServlet</servlet-name>

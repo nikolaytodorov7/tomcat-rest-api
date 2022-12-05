@@ -9,6 +9,7 @@
         <result property="title" column="title"/>
         <result property="body" column="body"/>
     </resultMap>
+
     <select id="getCommentByPostId" resultType="model.Comment" resultMap="result">
         SELECT *
         FROM comments

@@ -1,9 +1,9 @@
 package model;
 
 public class Comment {
-    int id;
-    int postId;
-    String name;
-    String email;
-    String body;
+    public int id;
+    public int postId;
+    public String name;
+    public String email;
+    public String body;
 }
