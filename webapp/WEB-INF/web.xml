@@ -6,27 +6,32 @@
     <display-name>Archetype Created Web Application</display-name>
 
     <servlet>
-        <servlet-name>servlet.DemoServlet</servlet-name>
-        <servlet-class>servlet.DemoServlet</servlet-class>
+        <servlet-name>servlet.PostServlet</servlet-name>
+        <servlet-class>servlet.PostServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>servlet.CommentServlet</servlet-name>
+        <servlet-class>servlet.CommentServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>servlet.DemoServlet</servlet-name>
-        <url-pattern>/posts</url-pattern>
+        <servlet-name>servlet.CommentServlet</servlet-name>
+        <url-pattern>/comments</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>servlet.DemoServlet</servlet-name>
-        <url-pattern>/posts/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>servlet.DemoServlet</servlet-name>
+        <servlet-name>servlet.PostServlet</servlet-name>
         <url-pattern>/posts/*/comments</url-pattern>
     </servlet-mapping>
 
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>servlet.PostServlet</servlet-name>-->
+<!--        <url-pattern>/posts</url-pattern>-->
+<!--    </servlet-mapping>-->
+
     <servlet-mapping>
-        <servlet-name>servlet.DemoServlet</servlet-name>
-        <url-pattern>/comments?postId=1</url-pattern>
+        <servlet-name>servlet.PostServlet</servlet-name>
+        <url-pattern>/posts/*</url-pattern>
     </servlet-mapping>
 </web-app>

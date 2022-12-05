@@ -14,35 +14,35 @@ public class PostMapper {
     }
 
     public List<Post> getAllPosts() {
-        try (SqlSession session = factory.openSession()) {
+        try (SqlSession session = factory.openSession(true)) {
             return session.selectList("getAllPosts");
         }
     }
 
     public Post getPostById(int id) {
         validateId(id);
-        try (SqlSession session = factory.openSession()) {
+        try (SqlSession session = factory.openSession(true)) {
             return session.selectOne("getPostById", id);
         }
     }
 
     public void insertPost(Post post) {
         validatePost(post);
-        try (SqlSession session = factory.openSession()) {
+        try (SqlSession session = factory.openSession(true)) {
             session.insert("insertPost", post);
         }
     }
 
     public void updatePost(Post post) {
         validatePost(post);
-        try (SqlSession session = factory.openSession()) {
+        try (SqlSession session = factory.openSession(true)) {
             session.update("updatePost", post);
         }
     }
 
     public void deletePost(int id) {
         validateId(id);
-        try (SqlSession session = factory.openSession()) {
+        try (SqlSession session = factory.openSession(true)) {
             session.delete("deletePost", id);
         }
     }

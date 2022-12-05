@@ -1,7 +1,6 @@
 package mapper;
 
 import model.Comment;
-import model.Post;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -14,9 +13,9 @@ public class CommentMapper {
         this.factory = factory;
     }
 
-    public List<Comment> getCommentByPostId(int id) {
+    public List<Comment> getCommentsByPostId(int id) {
         validateId(id);
-        try (SqlSession session = factory.openSession()) {
+        try (SqlSession session = factory.openSession(true)) {
             return session.selectList("getCommentByPostId", id);
         }
     }
@@ -24,10 +23,5 @@ public class CommentMapper {
     private void validateId(int id) {
         if (id < 0)
             throw new IllegalArgumentException("Id must be positive!");
-    }
-
-    private void validateComment(Comment comment) {
-        if (comment == null)
-            throw new IllegalArgumentException("Comment can't be null!");
     }
 }
