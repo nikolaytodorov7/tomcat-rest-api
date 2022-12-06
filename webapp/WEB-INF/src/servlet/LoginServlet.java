@@ -9,6 +9,9 @@ import model.User;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Pattern;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -25,6 +28,8 @@ public class LoginServlet extends HttpServlet {
         String path = buildPath(req);
         String username = req.getParameter("user");
         String password = req.getParameter("pass");
+        password = getEncryptedPassword(password);
+
         PrintWriter out = resp.getWriter();
         if (LOGIN_PATTERN.matcher(path).matches()) {
             User user = mapper.getUserByUsername(username);
@@ -57,5 +62,22 @@ public class LoginServlet extends HttpServlet {
 
         resp.sendError(SC_BAD_REQUEST);
         writeAsJsonNull(resp);
+    }
+
+    private String getEncryptedPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(password.getBytes(StandardCharsets.UTF_8));
+            byte[] digest = md.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : digest) {
+                hexString.append(Integer.toHexString(0xFF & b));
+            }
+
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException ignored) {
+        } // ignored because exception is thrown if no Provider supports implementation for the specified algorithm. SHA-1 is supported.
+
+        return null;
     }
 }
