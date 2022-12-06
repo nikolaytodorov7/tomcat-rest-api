@@ -9,9 +9,17 @@ import model.User;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.regex.Pattern;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static util.PathBuilder.buildPath;
+import static util.PrintWriterJson.writeAsJson;
+import static util.PrintWriterJson.writeAsJsonNull;
 
 public class LoginServlet extends HttpServlet {
     private static UserMapper mapper = new UserMapper();
+    private static final Pattern LOGIN_PATTERN = Pattern.compile("/login");
     private static final String HTML_LOGIN_FORM = """
             <html>
               <body>
@@ -36,19 +44,26 @@ public class LoginServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String path = buildPath(req);
+        if (!LOGIN_PATTERN.matcher(path).matches()) {
+            resp.sendError(SC_BAD_REQUEST);
+            writeAsJsonNull(resp);
+            return;
+        }
+
         String username = req.getParameter("user");
         String password = req.getParameter("pass");
 
         PrintWriter out = resp.getWriter();
         User user = mapper.getUserByUsername(username);
         if (user == null || !user.password.equals(password)) {
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            out.println("<html><body>UNAUTHORIZED</body></html>");
+            resp.setStatus(SC_UNAUTHORIZED);
+            out.println("UNAUTHORIZED");
             return;
         }
 
         HttpSession session = req.getSession(true);
         session.setAttribute("user", user);
-        out.println("<html><body>WELCOME</body></html>");
+        out.println("WELCOME");
     }
 }

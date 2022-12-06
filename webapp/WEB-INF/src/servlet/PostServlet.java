@@ -13,83 +13,110 @@ import model.Post;
 import model.Posts;
 
 import java.io.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static util.NumberParser.parseInt;
+import static util.PathBuilder.buildPath;
 import static util.PrintWriterJson.writeAsJson;
 import static util.PrintWriterJson.writeAsJsonNull;
 
 public class PostServlet extends HttpServlet {
     private static PostMapper mapper = new PostMapper();
     private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final Pattern ALL_POSTS_PATTERN = Pattern.compile("/posts");
+    private static final Pattern POST_WITH_ID_PATTERN = Pattern.compile("/posts/\\d+");
+    private static final Pattern COMMENTS_OF_POST_WITH_ID = Pattern.compile("/posts/\\d+/comments");
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.sendError(SC_UNAUTHORIZED);
             return;
         }
 
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null || pathInfo.equals("/")) {
+        String path = buildPath(req);
+        if (ALL_POSTS_PATTERN.matcher(path).matches()) {
             mapper.getAllPosts().forEach((p) -> writeAsJson(resp, p));
             return;
         }
 
-        String[] pathInfoParts = pathInfo.substring(1).split("/");
-        int numberOfParts = pathInfoParts.length;
-        switch (numberOfParts) {
-            case 1 -> {
-                int id = parseInt(pathInfoParts[0]);
-                if (id > 0)
-                    writeAsJson(resp, mapper.getPostById(id));
-                else
-                    writeAsJsonNull(resp);
+        String[] pathParts = path.substring(1).split("/");
+        if (POST_WITH_ID_PATTERN.matcher(path).matches()) {
+            int id = parseInt(pathParts[1]);
+            if (id > 0)
+                writeAsJson(resp, mapper.getPostById(id));
+            else {
+                resp.sendError(SC_BAD_REQUEST);
+                writeAsJsonNull(resp);
             }
-            case 2 -> {
-                if (pathInfoParts[1].equals("comments")) {
-                    int id = parseInt(pathInfoParts[0]);
-                    if (id < 0) {
-                        writeAsJsonNull(resp);
-                        return;
-                    }
 
-                    RequestDispatcher dispatcher = req.getRequestDispatcher("/comments?postId=" + id);
-                    dispatcher.forward(req, resp);
-                }
-            }
-            default -> writeAsJsonNull(resp);
+            return;
         }
+
+        if (COMMENTS_OF_POST_WITH_ID.matcher(path).matches()) {
+            int id = parseInt(pathParts[1]);
+            if (id < 0) {
+                resp.sendError(SC_BAD_REQUEST);
+                writeAsJsonNull(resp);
+                return;
+            }
+
+            RequestDispatcher dispatcher = req.getRequestDispatcher("/comments?postId=" + id);
+            dispatcher.forward(req, resp);
+            return;
+        }
+
+        writeAsJsonNull(resp);
     }
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        String body = req.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-        Posts posts = gson.fromJson(body, Posts.class);
-        if (posts == null) {
+            resp.sendError(SC_UNAUTHORIZED);
             writeAsJsonNull(resp);
             return;
         }
 
-        posts.posts.forEach((p) -> {
-            mapper.insertPost(p);
-            writeAsJson(resp, p);
-        });
+        String path = buildPath(req);
+        if (!ALL_POSTS_PATTERN.matcher(path).matches()) {
+            resp.sendError(SC_BAD_REQUEST);
+            writeAsJsonNull(resp);
+            return;
+        }
+
+        Collector<CharSequence, ?, String> joining = Collectors.joining(System.lineSeparator());
+        String body = req.getReader().lines().collect(joining);
+        Post post = gson.fromJson(body, Post.class);
+        if (post == null) {
+            writeAsJsonNull(resp);
+            return;
+        }
+
+        mapper.insertPost(post);
+        writeAsJson(resp, post);
     }
 
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.sendError(SC_UNAUTHORIZED);
+            writeAsJsonNull(resp);
             return;
         }
 
-        String body = req.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+        String path = buildPath(req);
+        if (!POST_WITH_ID_PATTERN.matcher(path).matches()) {
+            resp.sendError(SC_BAD_REQUEST);
+            writeAsJsonNull(resp);
+            return;
+        }
+
+        Collector<CharSequence, ?, String> joining = Collectors.joining(System.lineSeparator());
+        String body = req.getReader().lines().collect(joining);
         Post post = gson.fromJson(body, Post.class);
         if (post == null)
             writeAsJsonNull(resp);
@@ -101,28 +128,33 @@ public class PostServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null) {
+            resp.sendError(SC_UNAUTHORIZED);
             writeAsJsonNull(resp);
             return;
         }
 
-        String[] pathInfoParts = pathInfo.substring(1).split("/");
-        if (pathInfoParts.length != 1) {
+        String path = buildPath(req);
+        if (!POST_WITH_ID_PATTERN.matcher(path).matches()) {
+            resp.sendError(SC_BAD_REQUEST);
             writeAsJsonNull(resp);
             return;
         }
 
-        int id = parseInt(pathInfoParts[0]);
+        String[] pathParts = path.substring(1).split("/");
+        if (pathParts.length != 2) {
+            resp.sendError(SC_BAD_REQUEST);
+            writeAsJsonNull(resp);
+            return;
+        }
+
+        int id = parseInt(pathParts[0]);
         if (id > 0) {
             Post post = mapper.getPostById(id);
             mapper.deletePost(id);
             writeAsJson(resp, post);
-        } else
+        } else {
+            resp.sendError(SC_BAD_REQUEST);
             writeAsJsonNull(resp);
+        }
     }
 }
