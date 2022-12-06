@@ -26,6 +26,11 @@
     </servlet-mapping>
 
     <servlet-mapping>
+        <servlet-name>servlet.LoginServlet</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
         <servlet-name>servlet.CommentServlet</servlet-name>
         <url-pattern>/comments</url-pattern>
     </servlet-mapping>

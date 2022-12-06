@@ -13,6 +13,7 @@ import model.Post;
 import model.Posts;
 
 import java.io.*;
+import java.security.MessageDigest;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;

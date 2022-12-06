@@ -14,4 +14,10 @@
         FROM users
         WHERE username = #{username}
     </select>
+
+    <insert id="insertUser" parameterType="model.User" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO users (id, username, password)
+        VALUES (#{id}, #{username}, #{password})
+    </insert>
+
 </mapper>

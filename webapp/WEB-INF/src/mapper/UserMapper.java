@@ -1,5 +1,6 @@
 package mapper;
 
+import model.Post;
 import model.User;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -30,9 +31,20 @@ public class UserMapper {
         }
     }
 
+    public void insertUser(User user) {
+        validateUser(user);
+        try (SqlSession session = factory.openSession(true)) {
+            session.insert("insertUser", user);
+        }
+    }
 
     private void validateUsername(String username) {
         if (username == null)
             throw new IllegalArgumentException("Username can't be null!");
+    }
+
+    private void validateUser(User user) {
+        if (user == null)
+            throw new IllegalArgumentException("User can't be null!");
     }
 }
