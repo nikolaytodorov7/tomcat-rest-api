@@ -10,32 +10,27 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import mapper.PostMapper;
 import model.Post;
-import model.Posts;
+import model.StatusMessage;
 
 import java.io.*;
-import java.security.MessageDigest;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static util.NumberParser.parseInt;
-import static util.PathBuilder.buildPath;
-import static util.PrintWriterJson.writeAsJson;
-import static util.PrintWriterJson.writeAsJsonNull;
+import static util.ServletUtility.*;
 
 public class PostServlet extends HttpServlet {
-    private static PostMapper mapper = new PostMapper();
-    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final Pattern ALL_POSTS_PATTERN = Pattern.compile("/posts");
     private static final Pattern POST_WITH_ID_PATTERN = Pattern.compile("/posts/\\d+");
     private static final Pattern COMMENTS_OF_POST_WITH_ID = Pattern.compile("/posts/\\d+/comments");
+    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private PostMapper mapper = new PostMapper();
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendError(SC_UNAUTHORIZED);
+            StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");
+            writeAsJson(resp, msg);
             return;
         }
 
@@ -51,8 +46,8 @@ public class PostServlet extends HttpServlet {
             if (id > 0)
                 writeAsJson(resp, mapper.getPostById(id));
             else {
-                resp.sendError(SC_BAD_REQUEST);
-                writeAsJsonNull(resp);
+                StatusMessage msg = new StatusMessage(400, "Invalid id given in link.");
+                writeAsJson(resp, msg);
             }
 
             return;
@@ -61,8 +56,8 @@ public class PostServlet extends HttpServlet {
         if (COMMENTS_OF_POST_WITH_ID.matcher(path).matches()) {
             int id = parseInt(pathParts[1]);
             if (id < 0) {
-                resp.sendError(SC_BAD_REQUEST);
-                writeAsJsonNull(resp);
+                StatusMessage msg = new StatusMessage(400, "Invalid id given in link.");
+                writeAsJson(resp, msg);
                 return;
             }
 
@@ -71,21 +66,22 @@ public class PostServlet extends HttpServlet {
             return;
         }
 
-        writeAsJsonNull(resp);
+        StatusMessage msg = new StatusMessage(400, "Invalid link.");
+        writeAsJson(resp, msg);
     }
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendError(SC_UNAUTHORIZED);
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");
+            writeAsJson(resp, msg);
             return;
         }
 
         String path = buildPath(req);
         if (!ALL_POSTS_PATTERN.matcher(path).matches()) {
-            resp.sendError(SC_BAD_REQUEST);
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(400, "Invalid link.");
+            writeAsJson(resp, msg);
             return;
         }
 
@@ -93,69 +89,97 @@ public class PostServlet extends HttpServlet {
         String body = req.getReader().lines().collect(joining);
         Post post = gson.fromJson(body, Post.class);
         if (post == null) {
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(400, "Invalid post.");
+            writeAsJson(resp, msg);
             return;
         }
 
-        mapper.insertPost(post);
-        writeAsJson(resp, post);
+        int insertedPosts = mapper.insertPost(post);
+        if (insertedPosts == 1) {
+            writeAsJson(resp, post);
+            return;
+        }
+
+        StatusMessage msg = new StatusMessage(400, "Unable to insert post.");
+        writeAsJson(resp, msg);
     }
 
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendError(SC_UNAUTHORIZED);
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");
+            writeAsJson(resp, msg);
             return;
         }
 
         String path = buildPath(req);
         if (!POST_WITH_ID_PATTERN.matcher(path).matches()) {
-            resp.sendError(SC_BAD_REQUEST);
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(400, "Invalid link.");
+            writeAsJson(resp, msg);
             return;
         }
 
         Collector<CharSequence, ?, String> joining = Collectors.joining(System.lineSeparator());
         String body = req.getReader().lines().collect(joining);
         Post post = gson.fromJson(body, Post.class);
-        if (post == null)
-            writeAsJsonNull(resp);
+        if (post == null) {
+            StatusMessage msg = new StatusMessage(400, "Invalid post.");
+            writeAsJson(resp, msg);
+            return;
+        }
 
-        mapper.updatePost(post);
-        writeAsJson(resp, post);
+        int updatedPosts = mapper.updatePost(post);
+        if (updatedPosts == 1) {
+            writeAsJson(resp, post);
+            return;
+        }
+
+        StatusMessage msg = new StatusMessage(400, "Unable to update post with id=" + post.id);
+        writeAsJson(resp, msg);
     }
 
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            resp.sendError(SC_UNAUTHORIZED);
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");
+            writeAsJson(resp, msg);
             return;
         }
 
         String path = buildPath(req);
         if (!POST_WITH_ID_PATTERN.matcher(path).matches()) {
-            resp.sendError(SC_BAD_REQUEST);
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(400, "Invalid link.");
+            writeAsJson(resp, msg);
             return;
         }
 
         String[] pathParts = path.substring(1).split("/");
         if (pathParts.length != 2) {
-            resp.sendError(SC_BAD_REQUEST);
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(400, "Invalid link.");
+            writeAsJson(resp, msg);
             return;
         }
 
         int id = parseInt(pathParts[0]);
         if (id > 0) {
             Post post = mapper.getPostById(id);
-            mapper.deletePost(id);
+            if (post == null) {
+                StatusMessage msg = new StatusMessage(400, "Invalid post with id=" + post.id);
+                writeAsJson(resp, msg);
+                return;
+            }
+
+            int deletedPosts = mapper.deletePost(id);
+            if (deletedPosts != 1) {
+                StatusMessage msg = new StatusMessage(400, "Unable to delete post with id=" + post.id);
+                writeAsJson(resp, msg);
+                return;
+            }
+
             writeAsJson(resp, post);
         } else {
-            resp.sendError(SC_BAD_REQUEST);
-            writeAsJsonNull(resp);
+            StatusMessage msg = new StatusMessage(400, "Invalid id given in link.");
+            writeAsJson(resp, msg);
         }
     }
 }

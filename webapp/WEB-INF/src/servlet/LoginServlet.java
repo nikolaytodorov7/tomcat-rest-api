@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import mapper.UserMapper;
+import model.StatusMessage;
 import model.User;
 
 import java.io.IOException;
@@ -14,10 +15,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.regex.Pattern;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static util.PathBuilder.buildPath;
-import static util.PrintWriterJson.writeAsJsonNull;
+import static util.ServletUtility.*;
 
 public class LoginServlet extends HttpServlet {
     private static UserMapper mapper = new UserMapper();
@@ -33,22 +31,34 @@ public class LoginServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
         if (LOGIN_PATTERN.matcher(path).matches()) {
             User user = mapper.getUserByUsername(username);
-            if (user == null || !user.password.equals(password)) {
-                resp.setStatus(SC_UNAUTHORIZED);
-                out.println("UNAUTHORIZED");
+            if (user == null) {
+                StatusMessage msg = new StatusMessage(
+                        403, "User with username: '" + username + "' does not exist.");
+                writeAsJson(resp, msg);
+                return;
+            }
+
+            if (!user.password.equals(password)) {
+                StatusMessage msg = new StatusMessage(403, "Invalid password.");
+                writeAsJson(resp, msg);
                 return;
             }
 
             HttpSession session = req.getSession(true);
             session.setAttribute("user", user);
-            out.println("WELCOME");
+            out.println("Welcome " + username);
             return;
         }
 
         if (REGISTER_PATTERN.matcher(path).matches()) {
-            if (username == null || password == null) {
-                resp.sendError(SC_BAD_REQUEST);
-                out.println("REGISTRATION UNSUCCESSFUL");
+            if (username == null) {
+                StatusMessage msg = new StatusMessage(403, "Invalid username.");
+                writeAsJson(resp, msg);
+                return;
+            }
+            if (password == null) {
+                StatusMessage msg = new StatusMessage(403, "Invalid password.");
+                writeAsJson(resp, msg);
                 return;
             }
 
@@ -56,12 +66,12 @@ public class LoginServlet extends HttpServlet {
             user.username = username;
             user.password = password;
             mapper.insertUser(user);
-            out.println("SUCCESSFUL REGISTRATION");
+            out.println("Registration is successfully completed.");
             return;
         }
 
-        resp.sendError(SC_BAD_REQUEST);
-        writeAsJsonNull(resp);
+        StatusMessage msg = new StatusMessage(400, "Invalid link.");
+        writeAsJson(resp, msg);
     }
 
     private String getEncryptedPassword(String password) {

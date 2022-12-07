@@ -36,24 +36,24 @@ public class PostMapper {
         }
     }
 
-    public void insertPost(Post post) {
+    public int insertPost(Post post) {
         validatePost(post);
         try (SqlSession session = factory.openSession(true)) {
-            session.insert("insertPost", post);
+            return session.insert("insertPost", post);
         }
     }
 
-    public void updatePost(Post post) {
+    public int updatePost(Post post) {
         validatePost(post);
         try (SqlSession session = factory.openSession(true)) {
-            session.update("updatePost", post);
+            return session.update("updatePost", post);
         }
     }
 
-    public void deletePost(int id) {
+    public int deletePost(int id) {
         validateId(id);
         try (SqlSession session = factory.openSession(true)) {
-            session.delete("deletePost", id);
+            return session.delete("deletePost", id);
         }
     }
 
