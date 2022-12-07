@@ -7,18 +7,15 @@ import jakarta.servlet.http.HttpSession;
 import mapper.CommentMapper;
 import model.StatusMessage;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static util.ServletUtility.*;
 
 public class CommentServlet extends HttpServlet {
     private static CommentMapper mapper = new CommentMapper();
     private static final Pattern COMMENTS_OF_POST_WITH_ID = Pattern.compile("/comments\\?postId=\\d+");
 
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         HttpSession session = req.getSession(false);
         if (session == null) {
             StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");

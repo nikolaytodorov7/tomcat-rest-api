@@ -13,6 +13,8 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 import static util.ServletUtility.*;
@@ -38,6 +40,7 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
+            password += user.salt;
             if (!user.password.equals(password)) {
                 StatusMessage msg = new StatusMessage(403, "Invalid password.");
                 writeAsJson(resp, msg);
@@ -62,9 +65,12 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
+            int salt = new Random().nextInt(0, Integer.MAX_VALUE);
+            password += salt;
             User user = new User();
             user.username = username;
             user.password = password;
+            user.salt = salt;
             mapper.insertUser(user);
             out.println("Registration is successfully completed.");
             return;

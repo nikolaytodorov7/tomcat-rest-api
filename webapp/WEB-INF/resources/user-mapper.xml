@@ -16,8 +16,8 @@
     </select>
 
     <insert id="insertUser" parameterType="model.User" keyProperty="id" useGeneratedKeys="true">
-        INSERT INTO users (id, username, password)
-        VALUES (#{id}, #{username}, #{password})
+        INSERT INTO users (id, username, password, salt)
+        VALUES (#{id}, #{username}, #{password}, #{salt})
     </insert>
 
 </mapper>
