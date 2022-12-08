@@ -1,26 +1,14 @@
 package mapper;
 
 import model.User;
-import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 public class UserMapper {
-    private static SqlSessionFactory factory;
+    private SqlSessionFactory factory;
 
-    public UserMapper() {
-        try {
-            Properties properties = Resources.getResourceAsProperties("jdbc.properties");
-            InputStream in = Resources.getResourceAsStream("mybatis-config.xml");
-            factory = new SqlSessionFactoryBuilder().build(in, properties);
-        } catch (IOException e) {
-            System.err.println("Properties error!\n" + e.getMessage());
-        }
+    public UserMapper(SqlSessionFactory factory) {
+        this.factory = factory;
     }
 
     public User getUserByUsername(String username) {

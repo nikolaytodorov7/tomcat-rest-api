@@ -11,8 +11,12 @@ import jakarta.servlet.http.HttpSession;
 import mapper.PostMapper;
 import model.Post;
 import model.StatusMessage;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.*;
+import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -24,16 +28,20 @@ public class PostServlet extends HttpServlet {
     private static final Pattern POST_WITH_ID_PATTERN = Pattern.compile("/posts/\\d+");
     private static final Pattern COMMENTS_OF_POST_WITH_ID = Pattern.compile("/posts/\\d+/comments");
     private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private PostMapper mapper = new PostMapper();
+    private PostMapper mapper;
+
+    public void init() {
+        try {
+            Properties properties = Resources.getResourceAsProperties("jdbc.properties");
+            InputStream in = Resources.getResourceAsStream("mybatis-config.xml");
+            SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(in, properties);
+            mapper = new PostMapper(factory);
+        } catch (IOException e) {
+            System.err.println("Properties error!\n" + e.getMessage());
+        }
+    }
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(false);
-        if (session == null) {
-            StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");
-            writeAsJson(resp, msg);
-            return;
-        }
-
         String path = buildPath(req);
         if (ALL_POSTS_PATTERN.matcher(path).matches()) {
             mapper.getAllPosts().forEach((p) -> writeAsJson(resp, p));
@@ -71,13 +79,6 @@ public class PostServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession(false);
-        if (session == null) {
-            StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");
-            writeAsJson(resp, msg);
-            return;
-        }
-
         String path = buildPath(req);
         if (!ALL_POSTS_PATTERN.matcher(path).matches()) {
             StatusMessage msg = new StatusMessage(400, "Invalid link.");
@@ -105,13 +106,6 @@ public class PostServlet extends HttpServlet {
     }
 
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession(false);
-        if (session == null) {
-            StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");
-            writeAsJson(resp, msg);
-            return;
-        }
-
         String path = buildPath(req);
         if (!POST_WITH_ID_PATTERN.matcher(path).matches()) {
             StatusMessage msg = new StatusMessage(400, "Invalid link.");
@@ -139,13 +133,6 @@ public class PostServlet extends HttpServlet {
     }
 
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession(false);
-        if (session == null) {
-            StatusMessage msg = new StatusMessage(401, "There is no active session, please log in.");
-            writeAsJson(resp, msg);
-            return;
-        }
-
         String path = buildPath(req);
         if (!POST_WITH_ID_PATTERN.matcher(path).matches()) {
             StatusMessage msg = new StatusMessage(400, "Invalid link.");

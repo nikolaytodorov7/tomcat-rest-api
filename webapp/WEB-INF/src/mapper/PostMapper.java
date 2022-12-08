@@ -1,26 +1,16 @@
 package mapper;
 
 import model.Post;
-import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
-import java.io.*;
 import java.util.List;
-import java.util.Properties;
 
 public class PostMapper {
-    private static SqlSessionFactory factory;
+    private SqlSessionFactory factory;
 
-    public PostMapper() {
-        try {
-            Properties properties = Resources.getResourceAsProperties("jdbc.properties");
-            InputStream in = Resources.getResourceAsStream("mybatis-config.xml");
-            factory = new SqlSessionFactoryBuilder().build(in, properties);
-        } catch (IOException e) {
-            System.err.println("Properties error!\n" + e.getMessage());
-        }
+    public PostMapper(SqlSessionFactory factory) {
+        this.factory = factory;
     }
 
     public List<Post> getAllPosts() {

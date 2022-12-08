@@ -5,6 +5,16 @@
 <web-app>
     <display-name>Archetype Created Web Application</display-name>
 
+    <filter>
+        <filter-name>filter.AuthenticationFilter</filter-name>
+        <filter-class>filter.AuthenticationFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>filter.AuthenticationFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <servlet>
         <servlet-name>servlet.PostServlet</servlet-name>
         <servlet-class>servlet.PostServlet</servlet-class>
@@ -44,4 +54,5 @@
         <servlet-name>servlet.PostServlet</servlet-name>
         <url-pattern>/posts/*</url-pattern>
     </servlet-mapping>
+
 </web-app>
