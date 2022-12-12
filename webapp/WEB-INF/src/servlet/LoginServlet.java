@@ -52,8 +52,8 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            password += user.salt;
             password = getEncryptedPassword(password);
+            password += user.salt;
             if (!user.password.equals(password)) {
                 StatusMessage msg = new StatusMessage(403, "Invalid password.");
                 writeAsJson(resp, msg);
