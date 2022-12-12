@@ -5,6 +5,7 @@
 <configuration>
     <settings>
         <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <setting name="logImpl" value="LOG4J2"/>
     </settings>
 
     <typeAliases>
@@ -27,5 +28,6 @@
         <mapper resource="post-mapper.xml"/>
         <mapper resource="comment-mapper.xml"/>
         <mapper resource="user-mapper.xml"/>
+        <mapper resource="token-mapper.xml"/>
     </mappers>
 </configuration>

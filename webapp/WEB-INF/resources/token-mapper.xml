@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="token-mapper">
+    <resultMap type="model.Token" id="result">
+        <id property="id" column="id"/>
+        <result property="token" column="token"/>
+        <result property="userId" column="user_id"/>
+        <result property="dateCreated" column="date_created"/>
+        <result property="expirationDate" column="expiration_date"/>
+    </resultMap>
+
+    <select id="getTokenByUserId" resultType="model.Token" resultMap="result">
+        SELECT *
+        FROM tokens
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertToken" parameterType="model.Token" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO tokens (id, token, user_id, date_created, expiration_date)
+        VALUES (#{id}, #{token}, #{userId}, #{dateCreated}, #{expirationDate})
+    </insert>
+
+    <delete id="deleteToken" parameterType="model.Token">
+        DELETE
+        FROM tokens
+        WHERE user_id = #{userId}
+    </delete>
+</mapper>

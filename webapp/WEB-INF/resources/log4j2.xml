@@ -1,19 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration status="WARN">
-    <appenders>
-        <Console name="Console" target="SYSTEM_OUT">
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">-->
             <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
         </Console>
 
-        <File name="Log" fileName="logs/app.log">
+        <Logger name="org.mybatis" level="DEBUG">
+            <AppenderRef ref="applogfile"/>
+            <AppenderRef ref="stdout"/>
+        </Logger>
+
+        <Logger name="java.sql" level="DEBUG">
+            <AppenderRef ref="applogfile"/>
+            <AppenderRef ref="stdout"/>
+        </Logger>
+
+        <File name="ErrorFile" fileName="\logs\errors.log" immediateFlush="false"
+              append="false">
             <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
         </File>
-    </appenders>
 
-    <loggers>
-        <root level="debug">
-            <appender-ref ref="Console" level="info"/>
-            <appender-ref ref="Log" level="info"/>
-        </root>
-    </loggers>
-</configuration>
+        <File name="InfoFile" fileName="\logs\info.log" immediateFlush="false"
+              append="false">
+            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="InfoFile"/>
+            <AppenderRef ref="ErrorFile" level="error"/>
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
+
+        <!--<?xml version="1.0" encoding="UTF-8"?>-->
+        <!--<configuration status="WARN">-->
+        <!--    <appenders>-->
+        <!--        <Console name="Console" target="SYSTEM_OUT">-->
+        <!--            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>-->
+        <!--        </Console>-->
+
+        <!--        <File name="Log" fileName="logs/app.log">-->
+        <!--            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>-->
+        <!--        </File>-->
+        <!--    </appenders>-->
+
+        <!--    <loggers>-->
+        <!--        <root level="debug">-->
+        <!--            <appender-ref ref="Console" level="info"/>-->
+        <!--            <appender-ref ref="Log" level="info"/>-->
+        <!--        </root>-->
+        <!--    </loggers>-->
+        <!--</configuration>-->
+
