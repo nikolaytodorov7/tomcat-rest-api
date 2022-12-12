@@ -13,6 +13,7 @@ public class ServletUtility {
 
     public static void writeAsJson(HttpServletResponse resp, Object obj) {
         try {
+            resp.setHeader("Content-type", "application/json");
             PrintWriter out = resp.getWriter();
             String parsed = gson.toJson(obj);
             out.println(parsed);

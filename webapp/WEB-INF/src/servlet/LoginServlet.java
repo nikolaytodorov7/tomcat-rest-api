@@ -60,6 +60,10 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
+            HttpSession oldSession = req.getSession(false);
+            if (oldSession != null)
+                oldSession.invalidate();
+
             HttpSession session = req.getSession(true);
             session.setAttribute("user", user);
             out.println("Welcome " + username);
