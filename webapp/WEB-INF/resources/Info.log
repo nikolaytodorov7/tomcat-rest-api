@@ -1,0 +1,31 @@
+2022-01-13 09:01:45.912 DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.log4j2.Log4j2Impl' adapter.
+2022-01-13 09:01:45.921 DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.log4j2.Log4j2Impl' adapter.
+2022-01-13 09:01:45.934 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+2022-01-13 09:01:45.935 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+2022-01-13 09:01:45.935 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+2022-01-13 09:01:45.944 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+2022-01-13 09:01:46.097 INFO  filter.LoggerFilter - Method: GET, Path: /posts, Response Status: 200, Time elapsed: 15ms., User: Not logged
+2022-02-13 09:02:17.452 DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.log4j2.Log4j2Impl' adapter.
+2022-02-13 09:02:17.458 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+2022-02-13 09:02:17.458 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+2022-02-13 09:02:17.458 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+2022-02-13 09:02:17.458 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+2022-02-13 09:02:17.519 DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-02-13 09:02:18.080 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 1260375208.
+2022-02-13 09:02:18.084 DEBUG user-mapper.getUserByUsername - ==>  Preparing: SELECT * FROM users WHERE username = ?
+2022-02-13 09:02:18.128 DEBUG user-mapper.getUserByUsername - ==> Parameters: niki(String)
+2022-02-13 09:02:18.178 TRACE user-mapper.getUserByUsername - <==    Columns: id, username, password, salt
+2022-02-13 09:02:18.178 TRACE user-mapper.getUserByUsername - <==        Row: 1, nikI, 7110eda4d09e62aa5e4a390b0a572acd2c2201301171892, 1301171892
+2022-02-13 09:02:18.181 DEBUG user-mapper.getUserByUsername - <==      Total: 1
+2022-02-13 09:02:18.187 DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@4b1fcca8]
+2022-02-13 09:02:18.187 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - Returned connection 1260375208 to pool.
+2022-02-13 09:02:18.188 DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+2022-02-13 09:02:18.189 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - Checked out connection 1260375208 from pool.
+2022-02-13 09:02:18.189 DEBUG token-mapper.getTokenByUserId - ==>  Preparing: SELECT * FROM tokens WHERE user_id = ?
+2022-02-13 09:02:18.190 DEBUG token-mapper.getTokenByUserId - ==> Parameters: 1(Integer)
+2022-02-13 09:02:18.194 TRACE token-mapper.getTokenByUserId - <==    Columns: id, token, user_id, date_created, expiration_date
+2022-02-13 09:02:18.196 TRACE token-mapper.getTokenByUserId - <==        Row: 1, 255654163dffc5ee66a87829a3751a6bfeec75, 1, 2022-12-12 23:38:33, 2023-01-11 23:38:33
+2022-02-13 09:02:18.200 DEBUG token-mapper.getTokenByUserId - <==      Total: 1
+2022-02-13 09:02:18.201 DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@4b1fcca8]
+2022-02-13 09:02:18.202 DEBUG org.apache.ibatis.datasource.pooled.PooledDataSource - Returned connection 1260375208 to pool.
+2022-02-13 09:02:18.203 INFO  filter.LoggerFilter - Method: POST, Path: /login?user=niki&pass=1234, Response Status: 200, Time elapsed: 712ms., User: Not logged

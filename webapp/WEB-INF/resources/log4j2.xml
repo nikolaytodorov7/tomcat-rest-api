@@ -15,43 +15,24 @@
             <AppenderRef ref="stdout"/>
         </Logger>
 
-        <File name="ErrorFile" fileName="\logs\errors.log" immediateFlush="false"
+        <File name="ErrorFile" fileName="C:\Projects\IdeaProjects\TomApp\src\main\webapp\WEB-INF\resources\errors.log"
+              immediateFlush="true"
               append="false">
             <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
         </File>
 
-        <File name="InfoFile" fileName="\logs\info.log" immediateFlush="false"
+        <File name="InfoFile" fileName="C:\Projects\IdeaProjects\TomApp\src\main\webapp\WEB-INF\resources\info.log"
+              immediateFlush="true"
               append="false">
             <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
         </File>
     </Appenders>
 
     <Loggers>
-        <Root level="info">
+        <Root level="trace">
             <AppenderRef ref="InfoFile"/>
             <AppenderRef ref="ErrorFile" level="error"/>
             <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
 </Configuration>
-
-        <!--<?xml version="1.0" encoding="UTF-8"?>-->
-        <!--<configuration status="WARN">-->
-        <!--    <appenders>-->
-        <!--        <Console name="Console" target="SYSTEM_OUT">-->
-        <!--            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>-->
-        <!--        </Console>-->
-
-        <!--        <File name="Log" fileName="logs/app.log">-->
-        <!--            <PatternLayout pattern="%d{yyyy-mm-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>-->
-        <!--        </File>-->
-        <!--    </appenders>-->
-
-        <!--    <loggers>-->
-        <!--        <root level="debug">-->
-        <!--            <appender-ref ref="Console" level="info"/>-->
-        <!--            <appender-ref ref="Log" level="info"/>-->
-        <!--        </root>-->
-        <!--    </loggers>-->
-        <!--</configuration>-->
-

@@ -2,8 +2,10 @@ package servlet;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.http.*;
+import mapper.TokenMapper;
 import mapper.UserMapper;
 import model.StatusMessage;
+import model.Token;
 import model.User;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -15,6 +17,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -22,7 +25,8 @@ import java.util.regex.Pattern;
 import static util.ServletUtility.*;
 
 public class LoginServlet extends HttpServlet {
-    private static UserMapper mapper;
+    private static UserMapper userMapper;
+    private static TokenMapper tokenMapper;
     private static final Pattern LOGIN_PATTERN = Pattern.compile("/login\\?user=\\w+&pass=\\w+");
     private static final Pattern REGISTER_PATTERN = Pattern.compile("/register\\?user=\\w+&pass=\\w+");
 
@@ -31,7 +35,8 @@ public class LoginServlet extends HttpServlet {
             Properties properties = Resources.getResourceAsProperties("jdbc.properties");
             InputStream in = Resources.getResourceAsStream("mybatis-config.xml");
             SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(in, properties);
-            mapper = new UserMapper(factory);
+            userMapper = new UserMapper(factory);
+            tokenMapper = new TokenMapper(factory);
         } catch (IOException e) {
             System.err.println("Properties error!\n" + e.getMessage());
         }
@@ -44,7 +49,7 @@ public class LoginServlet extends HttpServlet {
 
         PrintWriter out = resp.getWriter();
         if (LOGIN_PATTERN.matcher(path).matches()) {
-            User user = mapper.getUserByUsername(username);
+            User user = userMapper.getUserByUsername(username);
             if (user == null) {
                 StatusMessage msg = new StatusMessage(
                         403, "User with username: '" + username + "' does not exist.");
@@ -60,12 +65,23 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            HttpSession oldSession = req.getSession(false);
-            if (oldSession != null)
-                oldSession.invalidate();
+            Token token = tokenMapper.getTokenByUserId(user.id);
+            if (token == null || token.expirationDate.getTime() < System.currentTimeMillis()) {
+                if (token != null)
+                    tokenMapper.deleteToken(user.id);
 
-            HttpSession session = req.getSession(true);
-            session.setAttribute("user", user);
+                String tokenStr = createToken(username);
+                token = new Token(tokenStr, user.id);
+                tokenMapper.insertToken(token);
+            }
+
+            resp.setHeader("Authorization", "Bearer{" + token.token + "}");
+//            HttpSession oldSession = req.getSession(false);
+//            if (oldSession != null)
+//                oldSession.invalidate();
+//
+//            HttpSession session = req.getSession(true);
+//            session.setAttribute("user", user);
             out.println("Welcome " + username);
             return;
         }
@@ -89,7 +105,7 @@ public class LoginServlet extends HttpServlet {
             user.username = username;
             user.password = password;
             user.salt = salt;
-            mapper.insertUser(user);
+            userMapper.insertUser(user);
             out.println("Registration is successfully completed.");
         }
     }
@@ -98,6 +114,25 @@ public class LoginServlet extends HttpServlet {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             md.update(password.getBytes(StandardCharsets.UTF_8));
+            byte[] digest = md.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : digest) {
+                hexString.append(Integer.toHexString(0xFF & b));
+            }
+
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException ignored) {
+        } // ignored because exception is thrown if no Provider supports implementation for the specified algorithm. SHA-1 is supported.
+
+        return null;
+    }
+
+    private String createToken(String username) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            int salt = new Random().nextInt(0, Integer.MAX_VALUE);
+            String token = username + salt;
+            md.update(token.getBytes(StandardCharsets.UTF_8));
             byte[] digest = md.digest();
             StringBuilder hexString = new StringBuilder();
             for (byte b : digest) {
